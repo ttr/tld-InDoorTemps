@@ -1,27 +1,54 @@
 global using Il2Cpp;
 
-using UnityEngine.SceneManagement;
 using MelonLoader;
 using UnityEngine;
 using HarmonyLib;
+using System.Reflection;
 
 namespace ttrIndoorTemps
 {
-	public static class BuildInfo
+    public static class BuildInfo
+    {
+        public const string Name = "IndoorTemps"; // Name of the Mod.  (MUST BE SET)
+        public const string Description = "In doors temps are dynamic."; // Description for the Mod.  (Set as null if none)
+        public const string Author = "ttr"; // Author of the Mod.  (MUST BE SET)
+        public const string Company = null; // Company that made the Mod.  (Set as null if none)
+        public const string Version = "0.2.0"; // Version of the Mod.  (MUST BE SET)
+        public const string DownloadLink = null; // Download Link for the Mod.  (Set as null if none)
+    }
+    internal class ttrIndoorTemps : MelonMod
 	{
-		public const string Name = "IndoorTemps"; // Name of the Mod.  (MUST BE SET)
-		public const string Description = "In doors temps are dynamic."; // Description for the Mod.  (Set as null if none)
-		public const string Author = "ttr"; // Author of the Mod.  (MUST BE SET)
-		public const string Company = null; // Company that made the Mod.  (Set as null if none)
-		public const string Version = "0.1.0"; // Version of the Mod.  (MUST BE SET)
-		public const string DownloadLink = null; // Download Link for the Mod.  (Set as null if none)
-	}
-	internal class ttrIndoorTemps : MelonMod
-	{
-		public override void OnApplicationStart()
+        internal static dynamic ETDCommon = null;
+
+        internal static void LinkDeps()
+        {
+            Assembly ETD;
+            try
+            {
+                ETD = Assembly.Load("ExtremeTempDrop");
+            }
+            catch
+            {
+                ETD = null;
+            }
+            if (ETD != null)
+            {
+                Type ETDType = ETD.GetType("ExtremeTempDrop.Common");
+                //Type ETDType = Type.GetType("ExtremeTempDrop.Common, ExtremeTempDrop");
+                //MelonLogger.Msg("temp (extreme1): " + ETDType);
+
+                if (ETDType != null)
+                {
+                    ETDCommon = Activator.CreateInstance(ETDType);
+                }
+            }
+
+        }
+        public override void OnApplicationStart()
 		{
 			Debug.Log($"[{Info.Name}] Version {Info.Version} loaded!");
 			Settings.OnLoad();
+            LinkDeps();
 		}
 	}
     
@@ -34,17 +61,24 @@ namespace ttrIndoorTemps
             {
                 return;
             }
+            float baseTemp = __instance.m_BaseTemperature;
             if (!InterfaceManager.IsMainMenuEnabled())
             {
                if (__instance.IsIndoorEnvironment())
                 {
+
+                    if (ttrIndoorTemps.ETDCommon != null)
+                    {
+                        baseTemp = (float)ttrIndoorTemps.ETDCommon.GetTempDropC() * -1;
+                        //MelonLogger.Msg("temp (extreme): " + baseTemp);
+                    }
                     if (!GameManager.GetPlayerManagerComponent().m_IndoorSpaceTrigger || !GameManager.GetPlayerManagerComponent().m_IndoorSpaceTrigger.m_UseOutdoorTemperature)
                     {
-                        __instance.m_IndoorTemperatureCelsius = Mathf.Lerp(__instance.m_BaseTemperature, __instance.m_TempHigh, Settings.options.indoorRatio);
+                        __instance.m_IndoorTemperatureCelsius = Mathf.Lerp(baseTemp, __instance.m_TempHigh, Settings.options.indoorRatio);
                     }
                 }
             }
-            //MelonLogger.Msg("temp: " + __instance.m_CurrentTemperature + " " + __instance.m_IndoorTemperatureCelsius + " h:" + __instance.m_TempHigh + " l:" + __instance.m_TempLow + " " + __instance.m_BaseTemperature);
+            //MelonLogger.Msg("temp: " + __instance.m_CurrentTemperature + " " + __instance.m_IndoorTemperatureCelsius + " h:" + __instance.m_TempHigh + " l:" + __instance.m_TempLow + " " + baseTemp);
         }
     }
     [HarmonyPatch(typeof(Weather), "CalculateCurrentTemperature")]

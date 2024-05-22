@@ -7,22 +7,22 @@ namespace ttrIndoorTemps
         [Section("Insulation ratios:")]
 		
 		[Name("In door")]
-		[Description("In Door areas that havew scene chnage (this will include transition caves).\n Recommended: 0.7")]
+		[Description("In Door areas that havew scene chnage (this will include transition caves).\n Recommended: 0.7-1")]
 		[Slider(0f, 1f, NumberFormat = "{0:F2}")]
 		public float indoorRatio = 0.7f;
 		
 		[Name("Semi in-door")]
-		[Description("Inside areas w/o scane change (shallow caves, look-out towers).\n Recommended: 0.25")]
+		[Description("Inside areas w/o scane change (shallow caves, look-out towers).\n Recommended: 0.3-0.5")]
 		[Slider(0f, 1f, NumberFormat = "{0:F2}")]
-		public float semiRatio = 0.25f;
+		public float semiRatio = 0.3f;
 		
 		[Name("Snow Shellter")]
-		[Description("Recommended: 0.4")]
+		[Description("Recommended: 0.4-0.7")]
 		[Slider(0f, 1f, NumberFormat = "{0:F2}")]
 		public float snowRatio = 0.4f;
 		
 		[Name("Cars")]
-		[Description("Recommended: 0.1")]
+		[Description("Recommended: 0.1-0.3")]
 		[Slider(0f, 1f, NumberFormat = "{0:F2}")]
 		public float carRatio = 0.1f;
 		
