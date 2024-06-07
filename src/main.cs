@@ -13,7 +13,7 @@ namespace ttrIndoorTemps
         public const string Description = "In doors temps are dynamic."; // Description for the Mod.  (Set as null if none)
         public const string Author = "ttr"; // Author of the Mod.  (MUST BE SET)
         public const string Company = null; // Company that made the Mod.  (Set as null if none)
-        public const string Version = "0.2.0"; // Version of the Mod.  (MUST BE SET)
+        public const string Version = "0.3.0"; // Version of the Mod.  (MUST BE SET)
         public const string DownloadLink = null; // Download Link for the Mod.  (Set as null if none)
     }
     internal class ttrIndoorTemps : MelonMod
@@ -40,6 +40,7 @@ namespace ttrIndoorTemps
                 if (ETDType != null)
                 {
                     ETDCommon = Activator.CreateInstance(ETDType);
+                    MelonLogger.Msg("Linked to ExtremeTempDrop");
                 }
             }
 
@@ -62,6 +63,7 @@ namespace ttrIndoorTemps
                 return;
             }
             float baseTemp = __instance.m_BaseTemperature;
+            float tmax = Mathf.Lerp(0, __instance.m_TempHigh, Settings.options.tMaxRatio);
             if (!InterfaceManager.IsMainMenuEnabled())
             {
                if (__instance.IsIndoorEnvironment())
@@ -69,16 +71,15 @@ namespace ttrIndoorTemps
 
                     if (ttrIndoorTemps.ETDCommon != null)
                     {
-                        baseTemp = (float)ttrIndoorTemps.ETDCommon.GetTempDropC() * -1;
-                        //MelonLogger.Msg("temp (extreme): " + baseTemp);
+                        baseTemp -= (float)ttrIndoorTemps.ETDCommon.GetTempDropC();
                     }
                     if (!GameManager.GetPlayerManagerComponent().m_IndoorSpaceTrigger || !GameManager.GetPlayerManagerComponent().m_IndoorSpaceTrigger.m_UseOutdoorTemperature)
                     {
-                        __instance.m_IndoorTemperatureCelsius = Mathf.Lerp(baseTemp, __instance.m_TempHigh, Settings.options.indoorRatio);
+                        __instance.m_IndoorTemperatureCelsius = Mathf.Lerp(baseTemp, tmax, Settings.options.indoorRatio);
                     }
                 }
             }
-            //MelonLogger.Msg("temp: " + __instance.m_CurrentTemperature + " " + __instance.m_IndoorTemperatureCelsius + " h:" + __instance.m_TempHigh + " l:" + __instance.m_TempLow + " " + baseTemp);
+            //MelonLogger.Msg("temp: b:" + __instance.m_BaseTemperature + " c:" + __instance.m_CurrentTemperature + " i:" + __instance.m_IndoorTemperatureCelsius + " h:" + __instance.m_TempHigh + " (" + tmax + ") l:" + __instance.m_TempLow + " " + baseTemp);
         }
     }
     [HarmonyPatch(typeof(Weather), "CalculateCurrentTemperature")]
@@ -92,25 +93,9 @@ namespace ttrIndoorTemps
             }
             if (!InterfaceManager.IsMainMenuEnabled())
             {
-                /*
-                float shelter = GameManager.GetSnowShelterManager().GetTemperatureIncreaseCelsius(); // +15
-                float indoortrig = 0;
-                if (GameManager.GetPlayerManagerComponent().m_IndoorSpaceTrigger)
-                {
-                    indoortrig = GameManager.GetPlayerManagerComponent().m_IndoorSpaceTrigger.m_TemperatureDeltaCelsius; // +8
-                }
-
-                float car = 0f; // GameManager.GetPlayerInVehicle().GetTempIncrease(); // +5
-
-                float num6 = GameManager.GetTimeOfDayComponent().GetHoursPlayedNotPaused() / 24f;
-                num6 -= GameManager.GetExperienceModeManagerComponent().GetOutdoorTempDropCelcius(num6);
-                float calc = (__instance.m_BaseTemperature + __instance.m_TempHigh) / 2;
-                float calc2 = Mathf.Lerp(__instance.m_BaseTemperature, __instance.m_TempHigh, 0.7f);
-                MelonLogger.Msg("temp: " + __instance.m_CurrentTemperature + " " + __instance.m_IndoorTemperatureCelsius + " " + shelter + " indoor:" + indoortrig + " " + num6 + " " + car + " h:" + __instance.m_TempHigh + " l:" + __instance.m_TempLow + " " + __instance.m_BaseTemperature + " c:" + calc + " | " + calc2);
-                */
 
                 float tbase = __instance.m_BaseTemperature;
-                float tmax = __instance.m_TempHigh;
+                float tmax = Mathf.Lerp(0, __instance.m_TempHigh, Settings.options.tMaxRatio);
                 float tdiff = 0f;
                 if (GameManager.GetSnowShelterManager().PlayerInNonRuinedShelter())
                 {
