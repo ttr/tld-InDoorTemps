@@ -13,16 +13,16 @@ namespace ttrIndoorTemps
         public const string Description = "In doors temps are dynamic."; // Description for the Mod.  (Set as null if none)
         public const string Author = "ttr"; // Author of the Mod.  (MUST BE SET)
         public const string Company = null; // Company that made the Mod.  (Set as null if none)
-        public const string Version = "0.3.0"; // Version of the Mod.  (MUST BE SET)
+        public const string Version = "0.3.1"; // Version of the Mod.  (MUST BE SET)
         public const string DownloadLink = null; // Download Link for the Mod.  (Set as null if none)
     }
     internal class ttrIndoorTemps : MelonMod
-	{
-        internal static dynamic ETDCommon = null;
+    {
+        internal static dynamic? ETDCommon = null;
 
         internal static void LinkDeps()
         {
-            Assembly ETD;
+            Assembly? ETD;
             try
             {
                 ETD = Assembly.Load("ExtremeTempDrop");
@@ -33,7 +33,8 @@ namespace ttrIndoorTemps
             }
             if (ETD != null)
             {
-                Type ETDType = ETD.GetType("ExtremeTempDrop.Common");
+                Type? ETDType;
+                ETDType = ETD.GetType("ExtremeTempDrop.Common");
                 //Type ETDType = Type.GetType("ExtremeTempDrop.Common, ExtremeTempDrop");
                 //MelonLogger.Msg("temp (extreme1): " + ETDType);
 
@@ -45,13 +46,13 @@ namespace ttrIndoorTemps
             }
 
         }
-        public override void OnApplicationStart()
-		{
-			Debug.Log($"[{Info.Name}] Version {Info.Version} loaded!");
-			Settings.OnLoad();
-            LinkDeps();
-		}
-	}
+        public override void OnInitializeMelon()
+        {
+          Debug.Log($"[{Info.Name}] Version {Info.Version} loaded!");
+          Settings.OnLoad();
+          LinkDeps();
+        }
+    }
     
     [HarmonyPatch(typeof(Weather), "Update")]
     internal class Weather_Update
